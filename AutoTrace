@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# Copyright (C) National University of Singapore
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+if [ -t 1 ]
+then
+    RED="\033[31m"
+    GREEN="\033[32m"
+    YELLOW="\033[33m"
+    BOLD="\033[1m"
+    OFF="\033[0m"
+else
+    RED=
+    GREEN=
+    YELLOW=
+    BOLD=
+    OFF=
+fi
+
+COMMAND="$1"
+REPLACE=false
+case "$COMMAND" in
+    instrument)
+        ;;
+    replace)
+        REPLACE=true
+        ;;
+    *)
+        echo -e "${RED}error${OFF}: unknown command ${YELLOW}$COMMAND${OFF}"
+
+        exit 1
+        ;;
+esac
+
+ORIG="$2"
+PROG="$ORIG"
+if [ ! -x "$PROG" ]
+then
+    PROG=`which "$PROG"`
+fi
+if [ ! -x "$PROG" ]
+then
+    echo -e "${RED}error${OFF}: ${YELLOW}$ORIG${OFF} not found..."
+    exit 1
+fi
+
+DEBUG=`readelf -S "$PROG" | grep .debug_line`
+if [ "$DEBUG" = "" ]
+then
+    echo -e "${RED}error${OFF}: ${YELLOW}$ORIG${OFF} was not compiled with (-g)..."
+    exit 1
+fi
+
+BASE=`basename $PROG`
+
+./e9tool -100 \
+    -M 'file=/(.*\.cpp|.*\.c)/ and F.entry'                                -P 'hit_call(F.name,absname,line)@autotrace' \
+    -M 'file=/(.*\.cpp|.*\.c)/ and (line.entry or BB.entry or I[-1].call)' -P 'hit_line(F.name,absname,line)@autotrace' \
+    -M 'file=/(.*\.cpp|.*\.c)/ and ret'                                    -P 'hit_return(F.name,absname,line)@autotrace' \
+    -M 'call and (target==&_Exit or target==&_exit)'                       -P 'hit_quit(%rax)@autotrace' \
+    "$PROG" -o "${BASE}.autotrace"
+
+if [ $REPLACE = "true" ]
+then
+    mv "$ORIG" "${BASE}.orig"
+    cp "${BASE}.autotrace" "$ORIG"
+fi
+
