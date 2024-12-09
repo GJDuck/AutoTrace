@@ -67,10 +67,10 @@ fi
 BASE=`basename $PROG`
 
 ./e9tool -100 \
-    -M 'file=/(.*\.cpp|.*\.c)/ and F.entry'                                -P 'hit_call(F.name,absname,line)@autotrace' \
-    -M 'file=/(.*\.cpp|.*\.c)/ and (line.entry or BB.entry or I[-1].call)' -P 'hit_line(F.name,absname,line)@autotrace' \
-    -M 'file=/(.*\.cpp|.*\.c)/ and ret'                                    -P 'hit_return(F.name,absname,line)@autotrace' \
-    -M 'call and (target==&_Exit or target==&_exit)'                       -P 'hit_quit(%rax)@autotrace' \
+    -M 'defined(file) && defined(F.name) && F.entry'                                -P 'hit_call(F.name,absname,line)@autotrace' \
+    -M 'defined(file) && defined(F.name) && (line.entry or BB.entry or I[-1].call)' -P 'hit_line(F.name,absname,line)@autotrace' \
+    -M 'defined(file) && defined(F.name) && ret'                                    -P 'hit_return(F.name,absname,line)@autotrace' \
+    -M 'call and (target==&_Exit or target==&_exit)'                                -P 'hit_quit(%rax)@autotrace' \
     "$PROG" -o "${BASE}.autotrace"
 
 if [ $REPLACE = "true" ]

@@ -37,6 +37,7 @@
 static bool option_tty = false;
 
 #define NAME        "AutoTrace"
+#define PREFIX      "AUTOTRACE"
 
 #define RED         (option_tty? "\33[31m": "")
 #define GREEN       (option_tty? "\33[32m": "")
@@ -341,8 +342,8 @@ void init(int argc, char **argv, char **envp)
 
     environ = envp;
 
-    const char *val = getenv("TRACE_DUMP");
-    S->dumpname = (val == NULL? "TRACE.json.gz": val);
+    const char *val = getenv(PREFIX "_DUMP");
+    S->dumpname = (val == NULL? PREFIX ".json.gz": val);
 
     // Fork-off a gzip process for compression:
     int fds[2];
@@ -380,7 +381,7 @@ void init(int argc, char **argv, char **envp)
     signal(SIGABRT, handler);
 
     // Block any attempt by the program to install other handlers:
-    if (getenv("TRACE_SECCOMP") != NULL)
+    if (getenv(PREFIX "_SECCOMP") != NULL)
     {
         struct sock_filter filter[] =
         {
