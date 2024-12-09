@@ -45,23 +45,23 @@ static bool option_tty = false;
 #define OFF         (option_tty? "\33[0m" : "")
 
 #define EXIT_ERROR  66
-#define EXIT_STOP  	67
+#define EXIT_STOP   67
 
 #define PATH_MAX    4096
 
 /*
  * Error reporting.
  */
-#define error(msg, ...)                                     	\
-    do {                                                    	\
-        fprintf(stderr, "%serror%s: " msg "\n", RED, OFF,   	\
-            ##__VA_ARGS__);                                 	\
-        exit(EXIT_ERROR);                                      	\
+#define error(msg, ...)                                         \
+    do {                                                        \
+        fprintf(stderr, "%serror%s: " msg "\n", RED, OFF,       \
+            ##__VA_ARGS__);                                     \
+        exit(EXIT_ERROR);                                       \
     } while (false)
-#define warning(msg, ...)                                     	\
-    do {                                                    	\
-        fprintf(stderr, "%swarning%s: " msg "\n", YELLOW, OFF,	\
-            ##__VA_ARGS__);                                 	\
+#define warning(msg, ...)                                       \
+    do {                                                        \
+        fprintf(stderr, "%swarning%s: " msg "\n", YELLOW, OFF,  \
+            ##__VA_ARGS__);                                     \
     } while (false)
 
 /*
@@ -69,8 +69,8 @@ static bool option_tty = false;
  */
 struct THREAD
 {
-    pid_t tid;				// Real thread ID
-    int id;					// Simplified thread ID
+    pid_t tid;              // Real thread ID
+    int id;                 // Simplified thread ID
 };
 typedef struct THREAD THREAD;
 
@@ -214,10 +214,10 @@ static int thread_id(void)
      * BUG: The following code assumes that tid's are never reused.  This is
      *      almost always true for real programs, but not guaranteed.
      */
-	static pid_t cached_tid = 0;
+    static pid_t cached_tid = 0;
     static int   cached_id  = 0;
     pid_t tid = gettid();
-	if (tid == cached_tid)
+    if (tid == cached_tid)
         return cached_id;
     THREAD key;
     key.tid = tid;
